@@ -1,0 +1,104 @@
+/* Home.css */
+.home-container {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .navbar {
+    width: 250px;
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #34495e;
+    margin-bottom: 20px;
+  }
+  
+  .logo img {
+    width: 30px;
+    margin-right: 10px;
+  }
+  
+  .logo span {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .nav-items {
+    flex-grow: 1;
+  }
+  
+  .nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  
+  .nav-item:hover {
+    background-color: #34495e;
+  }
+  
+  .nav-item.active {
+    background-color: #3498db;
+  }
+  
+  .nav-icon {
+    margin-right: 10px;
+    font-size: 1.1rem;
+  }
+  
+  .nav-label {
+    font-size: 0.9rem;
+  }
+  
+  .content-area {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #f5f7fa;
+  }
+  
+  .logout-btn {
+    background: none;
+    border: none;
+    color: #ecf0f1;
+    padding: 12px 20px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .logout-btn:hover {
+    background-color: #e74c3c;
+  }
+  
+  .logout-btn svg {
+    margin-right: 10px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .navbar {
+      width: 70px;
+    }
+    .nav-label {
+      display: none;
+    }
+    .logo span {
+      display: none;
+    }
+  }

@@ -1,0 +1,82 @@
+/* social.css - Custom styles for social media elements */
+
+/* Header social icons */
+.social-icons {
+    display: inline-block;
+    margin-left: 20px;
+    vertical-align: middle;
+}
+
+.social-icons a {
+    margin: 0 8px;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.social-icons a:hover {
+    transform: scale(1.1);
+}
+
+.social-icons img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Contact section styles */
+.contact-info {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.contact-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.contact-social {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.contact-social h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.social-links a {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.social-links a:hover {
+    transform: scale(1.1);
+}
+
+.social-links img {
+    width: 32px;
+    height: 32px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .social-icons {
+        margin-left: 10px;
+    }
+    
+    .social-icons img {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .social-links {
+        gap: 15px;
+    }
+}
