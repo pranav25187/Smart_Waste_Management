@@ -7,9 +7,24 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
   waitForConnections: true,
-  connectionLimit: 10,  // Maximum number of connections in the pool
-  queueLimit: 0  // Unlimited queue length
+  connectionLimit: 10,
+  queueLimit: 0,
+  ssl: {
+    rejectUnauthorized: false  // Optional: depending on your provider's SSL settings
+  }
+});
+
+// Attempt to connect and log the result
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error('Failed to connect to the database:', err.message);
+    return;
+  }
+
+  console.log('✅ Connected to the database successfully');
+  connection.release();  // Release the connection back to the pool
 });
 
 // Export the pool wrapped with promises
