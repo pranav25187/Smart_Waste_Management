@@ -1,22 +1,15 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
-// Environment-aware base URL configuration
-const BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://your-vercel-backend-app.vercel.app/api'
-  : 'http://localhost:5000/api';
-
-const API_URL = `${BASE_URL}/auth`;
-
-// Configure axios instance with default headers
-const api = axios.create({
-  baseURL: BASE_URL,
+const authApi = axios.create({
+  baseURL: `${API_BASE_URL}/auth`,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   }
 });
 
-// Add request interceptor to inject token
-api.interceptors.request.use((config) => {
+// Add request interceptor for token
+authApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -24,17 +17,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auth endpoints
 export const login = async (email, password) => {
-  return await api.post(`${API_URL}/login`, { email, password });
+  return await authApi.post('/login', { email, password });
 };
 
 export const signup = async (userData) => {
-  return await api.post(`${API_URL}/signup`, userData);
+  return await authApi.post('/signup', userData);
 };
 
 export const forgotPassword = async (email) => {
-  return await api.post(`${API_URL}/forgot-password`, { email });
+  return await authApi.post('/forgot-password', { email });
 };
 
 // Transaction endpoints
