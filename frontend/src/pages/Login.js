@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import '../css/Login.css';
-import { login, signup, forgotPassword } from '../api/auth';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,6 +17,8 @@ const Login = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -25,7 +26,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email: formData.email,
         password: formData.password
       });
@@ -41,7 +42,7 @@ const Login = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/signup", {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/signup`, {
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -59,7 +60,7 @@ const Login = () => {
 
   const handleForgotPassword = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/forgot-password", {
+      await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, {
         email: formData.email
       });
       setSuccessMessage("Password reset link sent to your email!");
@@ -73,7 +74,7 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h2>{isLogin ? "Login" : "Sign Up"}</h2>
-        
+
         {error && <div className="alert error">{error}</div>}
         {successMessage && <div className="alert success">{successMessage}</div>}
 
