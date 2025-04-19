@@ -1,4 +1,4 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 const pool = mysql.createPool({
@@ -6,29 +6,30 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306, // Fallback to default MySQL port
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: true, // Should be true for production
-    ca: process.env.DB_SSL_CA // Add if Railway provides a CA cert
-  }
+  ssl: process.env.DB_SSL === 'true' ? {
+    rejectUnauthorized: true,
+    ca: process.env.DB_SSL_CA
+  } : null
 });
 
 // Test connection
-pool.getConnection((err, connection) => {
-  if (err) {
+pool.getConnection()
+  .then(connection => {
+    console.log('Database connected successfully');
+    connection.release();
+  })
+  .catch(err => {
     console.error('Database connection failed:', {
       error: err.message,
       code: err.code,
       host: process.env.DB_HOST,
       port: process.env.DB_PORT
     });
-    return;
-  }
-  console.log('✅ Database connected successfully');
-  connection.release();
-});
+    process.exit(1);
+  });
 
-module.exports = pool.promise();
+module.exports = pool;
