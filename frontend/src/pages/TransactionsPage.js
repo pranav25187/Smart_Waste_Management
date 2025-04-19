@@ -1,6 +1,7 @@
 // frontend/src/pages/TransactionsPage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config';
 import axios from 'axios';
 import '../css/TransactionPage.css';
 
@@ -10,51 +11,50 @@ const TransactionsPage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user'));
-        
-        const [receivedRes, placedRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/transactions/seller/${user.user_id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`http://localhost:5000/api/transactions/buyer/${user.user_id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        ]);
+ useEffect(() => {
+        const fetchTransactions = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('user'));
 
-        setOrdersReceived(receivedRes.data);
-        setOrdersPlaced(placedRes.data);
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-      } finally {
-        setLoading(false);
-      }
+                const [receivedRes, placedRes] = await Promise.all([
+                    axios.get(`${API_BASE_URL}/api/transactions/seller/${user.user_id}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    }),
+                    axios.get(`${API_BASE_URL}/api/transactions/buyer/${user.user_id}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    })
+                ]);
+
+                setOrdersReceived(receivedRes.data);
+                setOrdersPlaced(placedRes.data);
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTransactions();
+    }, []);
+
+    const handleStatusUpdate = async (transactionId, newStatus) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.patch(
+                `${API_BASE_URL}/api/transactions/${transactionId}/status`,
+                { status: newStatus },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setOrdersReceived(prev => prev.map(order =>
+                order.transaction_id === transactionId
+                    ? {...order, order_status: newStatus }
+                    : order
+            ));
+        } catch (error) {
+            console.error('Error updating status:', error);
+        }
     };
 
-    fetchTransactions();
-  }, []);
-
-  const handleStatusUpdate = async (transactionId, newStatus) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.patch(
-        `http://localhost:5000/api/transactions/${transactionId}/status`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      setOrdersReceived(prev => prev.map(order => 
-        order.transaction_id === transactionId 
-          ? { ...order, order_status: newStatus } 
-          : order
-      ));
-    } catch (error) {
-      console.error('Error updating status:', error);
-    }
-  };
   
   const handleContact = (chatId) => {
     navigate('/home/chats', { state: { chatId } });
