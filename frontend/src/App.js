@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -29,21 +30,20 @@ function App() {
       },
     },
     typography: {
-      fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
+      fontFamily: "'Poppins', 'Roboto', 'Helvetica', 'Arial', sans-serif",
     },
   });
 
   const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-  
+
     if (!token || !user) {
       return <Navigate to="/login" replace />;
     }
-  
+
     return children;
   };
-  
 
   return (
     <ThemeProvider theme={theme}>
@@ -67,7 +67,7 @@ function App() {
             {/* Nested Routes under /home */}
             <Route index element={<HomePage />} />
             <Route path="post" element={<PostPage />} />
-            <Route path="materials" element={<MaterialsPage />} />
+            <Route path="materials" element={<MaterialsPage isMyMaterials={true} />} />
             <Route path="chats" element={<ChatsPage />} />
             <Route path="transactions" element={<TransactionsPage />} />
             <Route path="buy" element={<BuyForm />} />
