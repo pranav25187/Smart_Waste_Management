@@ -1,59 +1,50 @@
+// frontend/src/api/auth.js
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
-// Production API URL - MUST match your Vercel backend URL
-const API_BASE_URL = 'https://smart-waste-management-eob6.vercel.app';
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  withCredentials: true
-});
-
-// Request interceptor
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Response interceptor
-api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+const authApi = axios.create({
+    baseURL: `${API_BASE_URL}/auth`,
+    headers: {
+        'Content-Type': 'application/json'
     }
-    return Promise.reject(error);
-  }
-);
+});
 
-// Auth endpoints
-export const login = (email, password) => 
-  api.post('/api/auth/login', { email, password });
+authApi.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 
-export const signup = (userData) => 
-  api.post('/api/auth/signup', userData);
+export const login = async (email, password) => {
+    return await authApi.post('/login', { email, password });
+};
 
-export const forgotPassword = (email) => 
-  api.post('/api/auth/forgot-password', { email });
+export const signup = async (userData) => {
+    return await authApi.post('/signup', userData);
+};
 
-// Transaction endpoints
-export const createTransaction = (transactionData) => 
-  api.post('/api/transactions', transactionData);
+export const forgotPassword = async (email) => {
+    return await authApi.post('/forgot-password', { email });
+};
 
-export const getSellerTransactions = (sellerId) => 
-  api.get(`/api/transactions/seller/${sellerId}`);
+export const createTransaction = async (transactionData) => {
+    return await authApi.post('/transactions', transactionData);
+};
 
-export const getBuyerTransactions = (buyerId) => 
-  api.get(`/api/transactions/buyer/${buyerId}`);
+export const getSellerTransactions = async (sellerId) => {
+    return await authApi.get(`/transactions/seller/${sellerId}`);
+};
 
-export const updateTransactionStatus = (transactionId, status) => 
-  api.patch(`/api/transactions/${transactionId}/status`, { status });
+export const getBuyerTransactions = async (buyerId) => {
+    return await authApi.get(`/transactions/buyer/${buyerId}`);
+};
 
-export const deleteTransaction = (transactionId) => 
-  api.delete(`/api/transactions/${transactionId}`);
+export const updateTransactionStatus = async (transactionId, status) => {
+    return await authApi.patch(`/transactions/${transactionId}/status`, { status });
+};
+
+export const deleteTransaction = async (transactionId) => {
+    return await authApi.delete(`/transactions/${transactionId}`);
+};
