@@ -1,6 +1,7 @@
 // frontend/src/pages/HomePage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config';
 import axios from 'axios';
 import {
   Card,
@@ -52,29 +53,27 @@ export default function HomePage() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        if (!token || !user) {
-          navigate('/login');
-          return;
-        }
+        const fetchMaterials = async () => {
+            try {
+                if (!token || !user) {
+                    navigate('/login');
+                    return;
+                }
 
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/posts/others`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        setMaterials(response.data);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch materials');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMaterials();
-  }, [navigate, token, user]);
+                const response = await axios.get(`${API_BASE_URL}/api/posts/others`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setMaterials(response.data);
+            } catch (err) {
+                setError(err.response?.data?.message || 'Failed to fetch materials');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMaterials();
+    }, [navigate, token, user]);
 
   const handleExpandClick = (id) => {
     setExpandedId(prevId => (prevId === id ? null : id));
