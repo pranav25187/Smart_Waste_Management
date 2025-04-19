@@ -1,3 +1,4 @@
+// frontend/src/pages/HomePage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -44,7 +45,7 @@ export default function HomePage() {
   const [materials, setMaterials] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState();
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user'));
@@ -58,7 +59,7 @@ export default function HomePage() {
           return;
         }
 
-        const response = await axios.get('http://localhost:5000/api/posts/others', {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/posts/others`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -136,12 +137,12 @@ export default function HomePage() {
                 title={material.material_name}
                 subheader={`Posted by ${material.user_name}`}
               />
-              
+
               {material.image_path && (
                 <CardMedia
                   component="img"
                   height="194"
-                  image={`http://localhost:5000${material.image_path}`}
+                  image={`${process.env.REACT_APP_API_BASE_URL}${material.image_path}`}
                   alt={material.material_name}
                 />
               )}
@@ -154,7 +155,7 @@ export default function HomePage() {
                     size="small"
                   />
                   <Typography variant="h6" color="text.secondary">
-                    ₹{material.price}
+                    ${material.price}
                   </Typography>
                 </Box>
 
