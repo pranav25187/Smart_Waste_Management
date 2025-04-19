@@ -1,8 +1,11 @@
+// frontend/src/api/auth.js
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
+
+// Use environment variable for API base URL
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const authApi = axios.create({
-  baseURL: `${API_BASE_URL}/auth`,
+  baseURL: `${API_BASE_URL}/api/auth`,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -31,21 +34,21 @@ export const forgotPassword = async (email) => {
 
 // Transaction endpoints
 export const createTransaction = async (transactionData) => {
-  return await api.post('/transactions', transactionData);
+  return await authApi.post('/transactions', transactionData);
 };
 
 export const getSellerTransactions = async (sellerId) => {
-  return await api.get(`/transactions/seller/${sellerId}`);
+  return await authApi.get(`/transactions/seller/${sellerId}`);
 };
 
 export const getBuyerTransactions = async (buyerId) => {
-  return await api.get(`/transactions/buyer/${buyerId}`);
+  return await authApi.get(`/transactions/buyer/${buyerId}`);
 };
 
 export const updateTransactionStatus = async (transactionId, status) => {
-  return await api.patch(`/transactions/${transactionId}/status`, { status });
+  return await authApi.patch(`/transactions/${transactionId}/status`, { status });
 };
 
 export const deleteTransaction = async (transactionId) => {
-  return await api.delete(`/transactions/${transactionId}`);
+  return await authApi.delete(`/transactions/${transactionId}`);
 };
