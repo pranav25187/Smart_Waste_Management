@@ -11,28 +11,25 @@ const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const contactRoutes = require('./routes/contactRoutes');
-// In your server.js or routes file
 const chatRoutes = require('./routes/chatRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-const allowedOrigins = [
-  'https://your-frontend-app.vercel.app',
-  'http://localhost:3000'
-];
+// Get frontend URL from environment variables
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
+// Middleware
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
+// CORS Configuration
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-app.use(bodyParser.json());
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -43,16 +40,11 @@ app.use('/api/posts', postRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/chats', chatRoutes);
-// DB Connection Test
-db.getConnection()
-  .then(connection => {
-    console.log('MySQL Connected...');
-    connection.release();
-  })
-  .catch(err => {
-    console.error('Database connection failed:', err);
-    process.exit(1);
-  });
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
 
 // Create HTTP server for Socket.io
 const server = http.createServer(app);
@@ -60,8 +52,8 @@ const server = http.createServer(app);
 // Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
+    origin: FRONTEND_URL,
+    methods: ['GET', 'POST']
   }
 });
 
@@ -82,22 +74,22 @@ io.on('connection', (socket) => {
 
       // Save message to DB
       const [result] = await db.query(
-        `INSERT INTO messages (chat_id, sender_id, content) VALUES (?, ?, ?)`,
+        'INSERT INTO messages (chat_id, sender_id, content) VALUES (?, ?, ?)',
         [chat_id, sender_id, content]
       );
 
       // Update chat timestamp
       await db.query(
-        `UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE chat_id = ?`,
+        'UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE chat_id = ?',
         [chat_id]
       );
 
       // Fetch full message with sender info
       const [message] = await db.query(
-        `SELECT m.*, u.name as sender_name 
-         FROM messages m
-         JOIN users u ON m.sender_id = u.user_id
-         WHERE m.message_id = ?`,
+        `SELECT m.*, u.name as sender_name
+        FROM messages m
+        JOIN users u ON m.sender_id = u.user_id
+        WHERE m.message_id = ?`,
         [result.insertId]
       );
 
@@ -113,5 +105,19 @@ io.on('connection', (socket) => {
   });
 });
 
-// ✅ Start server (Only this one, not app.listen!)
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Database connection check
+db.getConnection()
+  .then(connection => {
+    console.log('MySQL Connected...');
+    connection.release();
+  })
+  .catch(err => {
+    console.error('Database connection failed:', err);
+    process.exit(1);
+  });
+
+// Start server
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Frontend URL: ${FRONTEND_URL}`);
+});
