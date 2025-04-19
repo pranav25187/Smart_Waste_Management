@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config';
 import axios from 'axios';
 import {
   Card,
@@ -48,26 +49,23 @@ const MaterialsPage = ({ isMyMaterials = false }) => {
   const [expandedId, setExpandedId] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
-
-  const fetchMaterials = async () => {
-    try {
-      console.log("Calling /api/posts/my...");
-
-      const response = await axios.get('http://localhost:5000/api/posts/my', {
-        headers: {
-          Authorization: `Bearer ${token}`
+const fetchMaterials = async () => {
+        try {
+            console.log("Calling /api/posts/my...");
+            const response = await axios.get(`${API_BASE_URL}/api/posts/my`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            console.log("Received materials:", response.data);
+            setMaterials(response.data);
+        } catch (err) {
+            console.error("Error fetching materials:", err.response?.data || err.message);
+            setError(err.response?.data?.message || "Failed to fetch materials");
+        } finally {
+            setLoading(false);
         }
-      });
-
-      console.log("Received materials:", response.data);
-      setMaterials(response.data);
-    } catch (err) {
-      console.error("Error fetching materials:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to fetch materials");
-    } finally {
-      setLoading(false);  // ✅ Ensure this is ALWAYS called
-    }
-  };
+    };
 
 
 
@@ -91,19 +89,17 @@ const MaterialsPage = ({ isMyMaterials = false }) => {
   const handleEdit = (postId) => {
     navigate(`/home/edit-post/${postId}`);
   };
-  const handleDelete = async (postId) => {
-    if (!window.confirm('Are you sure you want to delete this post?')) return;
-
-    try {
-      await axios.delete(`http://localhost:5000/api/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchMaterials();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete post');
-    }
-  };
-
+ const handleDelete = async (postId) => {
+        if (!window.confirm('Are you sure you want to delete this post?')) return;
+        try {
+            await axios.delete(`${API_BASE_URL}/api/posts/${postId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchMaterials();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to delete post');
+        }
+    };
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
