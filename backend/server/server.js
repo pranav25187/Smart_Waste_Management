@@ -16,23 +16,25 @@ const chatRoutes = require('./routes/chatRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Get frontend URL from environment variables
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+// Production CORS Configuration
+const allowedOrigins = [
+  'https://smart-waste-management-rust.vercel.app',
+  'https://smart-waste-management-eob6.vercel.app',
+  process.env.NODE_ENV === 'development' && 'http://localhost:3000'
+].filter(Boolean);
 
-// Middleware
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
-
-// CORS Configuration
 app.use(cors({
-  origin: [
-    "https://smart-waste-management-rust.vercel.app",
-    "http://localhost:3000" // For local development
-  ],
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
-// Serve static files
+// Enhanced Body Parser
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
+// Static Files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
@@ -42,50 +44,44 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/chats', chatRoutes);
 
-// Health check endpoint
+// Enhanced Health Check
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK' });
+  res.status(200).json({ 
+    status: 'OK',
+    version: process.env.npm_package_version,
+    environment: process.env.NODE_ENV
+  });
 });
 
-// Create HTTP server for Socket.io
+// Socket.io Server
 const server = http.createServer(app);
-
-// Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: allowedOrigins,
     methods: ['GET', 'POST']
+  },
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 2 * 60 * 1000 // 2 minutes
   }
 });
 
-// Socket.io events
+// Socket.io Events
 io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
+  console.log(`Client connected: ${socket.id}`);
 
-  // Join chat room
   socket.on('join_chat', (chatId) => {
     socket.join(chatId);
     console.log(`User joined chat: ${chatId}`);
   });
 
-  // Handle incoming messages
   socket.on('send_message', async (data) => {
     try {
       const { chat_id, sender_id, content } = data;
-
-      // Save message to DB
       const [result] = await db.query(
         'INSERT INTO messages (chat_id, sender_id, content) VALUES (?, ?, ?)',
         [chat_id, sender_id, content]
       );
-
-      // Update chat timestamp
-      await db.query(
-        'UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE chat_id = ?',
-        [chat_id]
-      );
-
-      // Fetch full message with sender info
+      
       const [message] = await db.query(
         `SELECT m.*, u.name as sender_name
         FROM messages m
@@ -93,32 +89,31 @@ io.on('connection', (socket) => {
         WHERE m.message_id = ?`,
         [result.insertId]
       );
-
-      // Emit message to room
+      
       io.to(chat_id).emit('receive_message', message[0]);
     } catch (error) {
-      console.error('Error handling message:', error);
+      console.error('Message handling error:', error);
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    console.log(`Client disconnected: ${socket.id}`);
   });
 });
 
-// Database connection check
+// Database Connection
 db.getConnection()
   .then(connection => {
-    console.log('MySQL Connected...');
+    console.log('✅ Database connected');
     connection.release();
   })
   .catch(err => {
-    console.error('Database connection failed:', err);
+    console.error('❌ Database connection failed:', err);
     process.exit(1);
   });
 
-// Start server
+// Start Server
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Frontend URL: ${FRONTEND_URL}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌐 Allowed origins: ${allowedOrigins.join(', ')}`);
 });
