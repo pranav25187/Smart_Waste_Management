@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../css/ContactUs.css';
+import { API_BASE_URL } from './config';
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -23,17 +24,18 @@ const ContactUs = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    try {
-      await axios.post('http://localhost:5000/api/contact', formData);
-      setSubmitMessage('Thank you for contacting us! We will get back to you soon.');
-      setFormData({ name: '', email: '', subject: '', message: '' });
-      setTimeout(() => navigate('/'), 2000);
-    } catch (error) {
-      setSubmitMessage('Failed to send message. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    
+        try {
+            await axios.post(`${API_BASE_URL}/api/contact`, formData);
+            setSubmitMessage('Thank you for contacting us! We will get back to you soon.');
+            setFormData({ name: '', email: '', subject: '', message: '' });
+            setTimeout(() => navigate('/'), 2000);
+        } catch (error) {
+            setSubmitMessage('Failed to send message. Please try again later.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
   return (
     <div className="contact-container">
