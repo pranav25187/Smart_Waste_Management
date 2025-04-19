@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from './config';
 import axios from "axios";
 import InventoryIcon from '@mui/icons-material/Inventory';
 
@@ -67,33 +68,42 @@ const PostWaste = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+        e.preventDefault();
+        setLoading(true);
+        setError("");
 
-    try {
-      const token = localStorage.getItem("token");
-      const formDataToSend = new FormData();
-      
-      // Append all form data
-      Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value);
-      });
-      
-      if (image) {
-        formDataToSend.append("image", image);
-      }
+        try {
+            const token = localStorage.getItem("token");
+            const formDataToSend = new FormData();
 
-      const response = await axios.post(
-        "http://localhost:5000/api/posts",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`
-          }
+            Object.entries(formData).forEach(([key, value]) => {
+                formDataToSend.append(key, value);
+            });
+
+            if (image) {
+                formDataToSend.append("image", image);
+            }
+
+            const response = await axios.post(
+                `${API_BASE_URL}/api/posts`,
+                formDataToSend,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.status === 201) {
+                navigate("/home/materials");
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to post material");
+        } finally {
+            setLoading(false);
         }
-      );
+    };
 
       if (response.status === 201) {
         navigate("/home/materials");
