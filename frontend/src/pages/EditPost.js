@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 import {
   Box,
   Typography,
@@ -55,39 +56,38 @@ const EditPost = () => {
     { value: "poor", label: "Poor" }
   ];
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        const post = response.data;
-        setFormData({
-          material_name: post.material_name,
-          material_category: post.material_category,
-          quantity: post.quantity,
-          unit: post.unit,
-          condition_status: post.condition_status,
-          description: post.description,
-          price: post.price,
-          location: post.location,
-          available_date: post.available_date.split('T')[0] // Format date for date input
-        });
-        
-        if (post.image_path) {
-          setImagePreview(`http://localhost:5000${post.image_path}`);
-        }
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load post');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPost();
-  }, [postId]);
+ useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get(`${API_BASE_URL}/api/posts/${postId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const post = response.data;
+                setFormData({
+                    material_name: post.material_name,
+                    material_category: post.material_category,
+                    quantity: post.quantity,
+                    unit: post.unit,
+                    condition_status: post.condition_status,
+                    description: post.description,
+                    price: post.price,
+                    location: post.location,
+                    available_date: post.available_date.split('T')[0]
+                });
+
+                if (post.image_path) {
+                    setImagePreview(`${API_BASE_URL}${post.image_path}`);
+                }
+            } catch (err) {
+                setError(err.response?.data?.message || 'Failed to load post');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPost();
+    }, [postId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
