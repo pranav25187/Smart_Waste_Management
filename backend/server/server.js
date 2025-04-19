@@ -25,9 +25,10 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // CORS Configuration
 app.use(cors({
-  origin: FRONTEND_URL,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: [
+    "https://smart-waste-management-rust.vercel.app",
+    "http://localhost:3000" // For local development
+  ],
   credentials: true
 }));
 
