@@ -1,54 +1,64 @@
-// frontend/src/api/auth.js
 import axios from 'axios';
 
-// Use environment variable for API base URL
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// Environment Configuration
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 
+  (process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:5000' 
+    : 'https://smart-waste-management-eob6.vercel.app');
 
-const authApi = axios.create({
-  baseURL: `${API_BASE_URL}/api/auth`,
+const api = axios.create({
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true
 });
 
-// Add request interceptor for token
-authApi.interceptors.request.use((config) => {
+// Request Interceptor
+api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, error => {
+  return Promise.reject(error);
 });
 
-export const login = async (email, password) => {
-  return await authApi.post('/login', { email, password });
-};
+// Response Interceptor
+api.interceptors.response.use(response => response, error => {
+  if (error.response?.status === 401) {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  }
+  return Promise.reject(error);
+});
 
-export const signup = async (userData) => {
-  return await authApi.post('/signup', userData);
-};
+// Auth Endpoints
+export const login = (email, password) => 
+  api.post('/api/auth/login', { email, password });
 
-export const forgotPassword = async (email) => {
-  return await authApi.post('/forgot-password', { email });
-};
+export const signup = (userData) => 
+  api.post('/api/auth/signup', userData);
 
-// Transaction endpoints
-export const createTransaction = async (transactionData) => {
-  return await authApi.post('/transactions', transactionData);
-};
+export const forgotPassword = (email) => 
+  api.post('/api/auth/forgot-password', { email });
 
-export const getSellerTransactions = async (sellerId) => {
-  return await authApi.get(`/transactions/seller/${sellerId}`);
-};
+// Transaction Endpoints
+export const createTransaction = (transactionData) => 
+  api.post('/api/transactions', transactionData);
 
-export const getBuyerTransactions = async (buyerId) => {
-  return await authApi.get(`/transactions/buyer/${buyerId}`);
-};
+export const getSellerTransactions = (sellerId) => 
+  api.get(`/api/transactions/seller/${sellerId}`);
 
-export const updateTransactionStatus = async (transactionId, status) => {
-  return await authApi.patch(`/transactions/${transactionId}/status`, { status });
-};
+export const getBuyerTransactions = (buyerId) => 
+  api.get(`/api/transactions/buyer/${buyerId}`);
 
-export const deleteTransaction = async (transactionId) => {
-  return await authApi.delete(`/transactions/${transactionId}`);
-};
+export const updateTransactionStatus = (transactionId, status) => 
+  api.patch(`/api/transactions/${transactionId}/status`, { status });
+
+export const deleteTransaction = (transactionId) => 
+  api.delete(`/api/transactions/${transactionId}`);
+
+// Health Check
+export const checkHealth = () => api.get('/api/health');
